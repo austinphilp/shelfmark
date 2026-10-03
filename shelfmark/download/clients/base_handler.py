@@ -300,9 +300,19 @@ class ExternalClientHandler(DownloadHandler, ABC):
 
         elif protocol == "torrent":
             torrent_action = config.get("PROWLARR_TORRENT_ACTION", "keep")
-            if torrent_action == "remove":
+            if torrent_action in ("remove", "remove_and_delete"):
+                # Import succeeded; the client handles its own download data.
                 try:
-                    client.remove(download_id, delete_files=False)
+                    removed = client.remove(
+                        download_id,
+                        delete_files=torrent_action == "remove_and_delete",
+                    )
+                    if not removed:
+                        logger.warning(
+                            "Failed to remove torrent %s from %s",
+                            download_id,
+                            getattr(client, "name", "client"),
+                        )
                 except _CLIENT_CLEANUP_ERRORS as e:
                     logger.warning(
                         "Failed to remove torrent %s from %s: %s",
