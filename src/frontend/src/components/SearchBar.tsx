@@ -1,4 +1,4 @@
-import type { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { useSearchMode } from '../contexts/SearchModeContext';
@@ -52,6 +52,20 @@ const EMPTY_AUTOCOMPLETE_OPTIONS: DynamicFieldOption[] = [];
 const EMPTY_QUERY_TARGETS: QueryTargetOption[] = [];
 
 const SEARCH_CONTROLS_PANEL_ID = 'search-bar-controls-panel';
+
+const SEARCH_BAR_CONTAINER_CLASS = 'flex min-w-0 flex-col';
+
+export const SearchBarLayout = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) => (
+  <div className={[SEARCH_BAR_CONTAINER_CLASS, className].filter(Boolean).join(' ')}>
+    {children}
+  </div>
+);
 
 const BookIcon = () => (
   <svg
@@ -377,7 +391,9 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
       Boolean(autocompleteEndpoint) &&
       isAutocompleteOpen &&
       textInputValue.trim().length >= autocompleteMinQueryLength;
-    const wrapperClasses = ['relative flex items-center rounded-full border', className]
+    // Header places this component in a horizontal flex row. Keep the optional controls panel
+    // inside the same flex item so it always opens below the search field.
+    const wrapperClasses = ['relative flex w-full items-center rounded-full border']
       .filter(Boolean)
       .join(' ')
       .trim();
@@ -589,7 +605,7 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
       ) : null;
 
     return (
-      <>
+      <SearchBarLayout className={className}>
         {autocompleteSession}
         {dynamicOptionsSession}
         <div
@@ -1060,7 +1076,7 @@ export const SearchBar = forwardRef<SearchBarHandle, SearchBarProps>(
             )}
           </div>
         )}
-      </>
+      </SearchBarLayout>
     );
   },
 );
